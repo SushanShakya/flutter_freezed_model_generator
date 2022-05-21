@@ -21,6 +21,11 @@
 	"activationEvents": [
 		"onCommand:extension.freezedClass"
 	],
+	"keywords": [
+		"dart",
+		"flutter",
+		"productivity"
+	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
