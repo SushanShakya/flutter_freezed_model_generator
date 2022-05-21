@@ -1,0 +1,63 @@
+{
+	"name": "freezed-model-gen",
+	"displayName": "freezed_model_gen",
+	"description": "Generate Freezed Models from JSON",
+	"version": "0.0.1",
+	"engines": {
+		"vscode": "^1.67.0"
+	},
+	"publisher": "SushanShakya",
+	"bugs": {
+		"url": "https://github.com/SushanShakya/flutter_freezed_model_generator/issues",
+		"email": "sushaanshakya88@gmail.com"
+	},
+	"repository": {
+		"url": "https://github.com/SushanShakya/flutter_freezed_model_generator",
+		"type": "git"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"onCommand:extension.freezedClass"
+	],
+	"main": "./out/extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "extension.freezedClass",
+				"title": "Paste JSON as Model"
+			}
+		],
+		"menus": {
+			"explorer/context": [
+				{
+					"command": "extension.freezedClass",
+					"group": "modelGroup@1",
+					"when": "explorerResourceIsFolder"
+				}
+			]
+		}
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"watch": "tsc -watch -p ./",
+		"pretest": "npm run compile && npm run lint",
+		"lint": "eslint src --ext ts",
+		"test": "node ./out/test/runTest.js"
+	},
+	"devDependencies": {
+		"@types/vscode": "^1.67.0",
+		"@types/glob": "^7.2.0",
+		"@types/mocha": "^9.1.0",
+		"@types/node": "14.x",
+		"@typescript-eslint/eslint-plugin": "^5.12.1",
+		"@typescript-eslint/parser": "^5.12.1",
+		"eslint": "^8.9.0",
+		"glob": "^7.2.0",
+		"mocha": "^9.2.1",
+		"typescript": "^4.5.5",
+		"@vscode/test-electron": "^2.1.2"
+	}
+}
