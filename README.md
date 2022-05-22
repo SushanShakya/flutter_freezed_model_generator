@@ -1,5 +1,5 @@
 <p align="center">
-<img src="https://raw.githubusercontent.com/SushanShakya/flutter_freezed_model_generatora/main/assets/logo.png" height="100" alt="Model Generator" />
+<img src="https://raw.githubusercontent.com/SushanShakya/flutter_freezed_model_generator/main/assets/logo.png" height="100" alt="Model Generator" />
 </p>
 ## Freezed Model Generator
 Generate Dart Freezed Model from JSON
