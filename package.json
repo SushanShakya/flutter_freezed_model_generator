@@ -1,8 +1,8 @@
 {
 	"name": "freezed-model-gen",
-	"displayName": "freezed_model_gen",
+	"displayName": "Freezed Model Generator",
 	"description": "Generate Freezed Models from JSON",
-	"version": "0.0.2",
+	"version": "1.0.0",
 	"engines": {
 		"vscode": "^1.67.0"
 	},
@@ -65,5 +65,11 @@
 		"mocha": "^9.2.1",
 		"typescript": "^4.5.5",
 		"@vscode/test-electron": "^2.1.2"
+	},
+	"__metadata": {
+		"id": "15b66319-c702-41cc-bae8-66267d01be27",
+		"publisherDisplayName": "SushanShakya",
+		"publisherId": "3c54ab77-6071-41ad-828f-5f01c713a805",
+		"isPreReleaseVersion": false
 	}
 }

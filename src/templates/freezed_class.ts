@@ -1,3 +1,4 @@
+import { privateEncrypt } from "crypto";
 import { writeFileSync } from "fs";
 import * as vscode from "vscode";
 
@@ -31,7 +32,7 @@ function getFieldTemplate(variableName: string, variableType: string): string {
     return `${variableType}? ${variableName},`;
 }
 
-function extractJSON(json: string): any | null {
+function extractJSON(json: string): object | null {
     try {
         return JSON.parse(json);
     } catch (e) {
@@ -39,7 +40,7 @@ function extractJSON(json: string): any | null {
     }
 }
 
-function getDartDataType(x: any): string {
+function getDartDataType(key: string, x: any): string {
     var type = typeof x;
     if (type === 'string') {
         if (checkDate(x)) {
@@ -48,37 +49,80 @@ function getDartDataType(x: any): string {
         return "String";
     }
     if (type === 'number') {
-        return checkNumber(x);
+        if (checkFloating(x)) {
+            return 'double';
+        }
+        return 'int';
     }
     if (type === 'boolean') {
         return 'bool';
+    }
+    if (type === 'object') {
+        if (Array.isArray(x)) {
+            let listType: string = (x.length === 0) ? 'dynamic' : extractListType(key, x[0]);
+            return `List<${listType}>`;
+        } else {
+            return getNewClassName(key);
+        }
+    }
+    return 'dynamic';
+}
+
+
+function getFirstLetterCapital(text: string): string {
+    return text.charAt(0).toUpperCase() + text.slice(1);
+}
+function getUpperCamelCase(snakeCase: string): string {
+    let names = snakeCase.split("_");
+    let capitalized = names.map((v, i) => {
+        return getFirstLetterCapital(v);
+    })
+    return capitalized.join("")
+}
+
+function getNewClassName(key: string): string {
+    return getFirstLetterCapital(getUpperCamelCase(key));
+}
+
+function extractListType(key: string, x: any): string {
+    if (typeof x === 'object') {
+        if (Array.isArray(x)) {
+            let listType: string = extractListType(key, x[0]);
+            return `List<${listType}>`;
+        } else {
+            return getNewClassName(key);
+        }
+    }
+    if (typeof x === 'string') {
+        return 'String';
+    }
+
+    if (typeof x === 'number') {
+        if (checkFloating(x)) {
+            return 'double';
+        }
+        return 'int';
     }
     return 'dynamic';
 }
 
 function checkDate(x: string): boolean {
-    try {
-        new Date(x);
-    } catch (e) {
+    let res = Date.parse(x);
+    return !Number.isNaN(res)
+}
+
+function checkFloating(x: number): boolean {
+    if (Math.round(x) === x) {
         return false;
     }
     return true;
 }
 
-function checkNumber(x: number): string {
-    if (Math.round(x) === x) {
-        return 'int';
-    }
-    return 'double';
-}
-
-export function extractFields(json: string) {
-    var data: any | null = extractJSON(json);
-    if (data === null) throw '';
+export function extractFields(data: any) {
     var fields: string[] = [];
     let key: keyof typeof data;
     for (key in data) {
-        var variableType: string = getDartDataType(data[key])
+        var variableType: string = getDartDataType(key, data[key])
         var template: string = getFieldTemplate(key, variableType)
         fields.push(template)
     }
@@ -93,13 +137,74 @@ async function getInput(prompt: string): Promise<string> {
     return name;
 }
 
+function isMap(x: any): boolean {
+    if (typeof x === 'object') {
+        if (Array.isArray(x)) {
+            return false;
+        }
+        return true;
+    }
+    return false;
+}
+
+function isList(x: any): boolean {
+    if (typeof x === 'object') {
+        if (Array.isArray(x)) {
+            return true;
+        }
+        return false;
+    }
+    return false;
+}
+
+function hasMapDescendents(x: Array<any>): boolean {
+    if (x.length === 0) return false;
+    if (typeof x[0] === 'object') {
+        if (Array.isArray(x[0])) {
+            return hasMapDescendents(x[0]);
+        } else {
+            return true;
+        }
+    }
+    return false;
+}
+
+function getFirstMapDescendent(x: Array<object>): object {
+    if (Array.isArray(x[0])) {
+        return getFirstMapDescendent(x[0]);
+    } else {
+        return x[0];
+    }
+}
+
+export function getAllClasses(className: string, json: any): Array<string> {
+    let fields: string = extractFields(json);
+    let defaultTemplate = getClassTemplate(className, fields);
+    let extraTemplates: Array<string> = []
+    let key: keyof typeof json
+    for (key in json) {
+        if (isMap(json[key])) {
+            extraTemplates = [...extraTemplates, ...getAllClasses(getNewClassName(key), json[key])]
+        }
+        if (isList(json[key])) {
+            if (hasMapDescendents(json[key])) {
+                let descendent: object = getFirstMapDescendent(json[key]);
+                extraTemplates = [...extraTemplates, ...getAllClasses(getNewClassName(key), descendent)]
+            }
+        }
+
+    }
+    return [defaultTemplate, ...extraTemplates];
+}
+
 async function getFreezedClass(className: string, fileName: string): Promise<string> {
     try {
         let content: string = await getContentFromClipboard();
+        let contentJson: object | null = extractJSON(content);
+        if (contentJson === null) throw 'Invalid JSON';
         let headers: string = getHeaders(fileName);
-        let fields: string = extractFields(content);
-        let classTemplate = getClassTemplate(className, fields);
-        let result = `${headers}\n\n${classTemplate}`;
+        let classTemplate = getAllClasses(className, contentJson);
+        let result = `${headers}\n\n${classTemplate.join('\n\n')}`;
         return result;
     } catch (e) {
         throw e as string;
