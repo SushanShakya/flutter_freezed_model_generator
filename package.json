@@ -2,7 +2,7 @@
 	"name": "freezed-model-gen",
 	"displayName": "Freezed Model Generator",
 	"description": "Generate Freezed Models from JSON",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"engines": {
 		"vscode": "^1.67.0"
 	},
