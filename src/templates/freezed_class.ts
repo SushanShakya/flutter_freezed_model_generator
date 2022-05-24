@@ -3,7 +3,8 @@ import { writeFileSync } from "fs";
 import * as vscode from "vscode";
 
 export function getClassTemplate(name: string, fields: string): string {
-    return `class ${name} with _\$${name} {
+    return `@freezed
+class ${name} with _\$${name} {
 \tconst factory ${name}({
 ${fields}
 \t}) = _${name};
